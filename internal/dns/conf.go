@@ -3,6 +3,7 @@ package dns
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"sort"
 	"strings"
@@ -14,9 +15,9 @@ import (
 	"github.com/qdm12/golibs/network"
 )
 
-func (c *configurator) MakeUnboundConf(ctx context.Context, settings settings.DNS, uid, gid int) (err error) {
+func (c *configurator) MakeUnboundConf(ctx context.Context, settings settings.DNS, localSubnet net.IPNet, uid, gid int) (err error) {
 	c.logger.Info("generating Unbound configuration")
-	lines, warnings := generateUnboundConf(ctx, settings, c.client, c.logger)
+	lines, warnings := generateUnboundConf(ctx, settings, localSubnet, c.client, c.logger)
 	for _, warning := range warnings {
 		c.logger.Warn(warning)
 	}
@@ -28,7 +29,7 @@ func (c *configurator) MakeUnboundConf(ctx context.Context, settings settings.DN
 }
 
 // MakeUnboundConf generates an Unbound configuration from the user provided settings.
-func generateUnboundConf(ctx context.Context, settings settings.DNS,
+func generateUnboundConf(ctx context.Context, settings settings.DNS, localSubnet net.IPNet,
 	client network.Client, logger logging.Logger) (
 	lines []string, warnings []error) {
 	doIPv6 := "no"
@@ -69,7 +70,8 @@ func generateUnboundConf(ctx context.Context, settings settings.DNS,
 		"interface": "0.0.0.0",
 		"port":      "53",
 		// Other
-		"username": "\"nonrootuser\"",
+		"username":       "\"nonrootuser\"",
+		"access-control": fmt.Sprintf("%s allow", localSubnet.String()),
 	}
 
 	// Block lists

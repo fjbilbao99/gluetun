@@ -30,6 +30,7 @@ type looper struct {
 	streamMerger  command.StreamMerger
 	uid           int
 	gid           int
+	localSubnet   net.IPNet
 	restart       chan struct{}
 	start         chan struct{}
 	stop          chan struct{}
@@ -39,13 +40,14 @@ type looper struct {
 }
 
 func NewLooper(conf Configurator, settings settings.DNS, logger logging.Logger,
-	streamMerger command.StreamMerger, uid, gid int) Looper {
+	streamMerger command.StreamMerger, uid, gid int, localSubnet net.IPNet) Looper {
 	return &looper{
 		conf:         conf,
 		settings:     settings,
 		logger:       logger.WithPrefix("dns over tls: "),
 		uid:          uid,
 		gid:          gid,
+		localSubnet:  localSubnet,
 		streamMerger: streamMerger,
 		restart:      make(chan struct{}),
 		start:        make(chan struct{}),
@@ -178,7 +180,7 @@ func (l *looper) Run(ctx context.Context, wg *sync.WaitGroup, signalDNSReady fun
 			l.logAndWait(ctx, err)
 			continue
 		}
-		if err := l.conf.MakeUnboundConf(ctx, settings, l.uid, l.gid); err != nil {
+		if err := l.conf.MakeUnboundConf(ctx, settings, l.localSubnet, l.uid, l.gid); err != nil {
 			l.logAndWait(ctx, err)
 			continue
 		}

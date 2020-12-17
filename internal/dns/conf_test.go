@@ -3,6 +3,7 @@ package dns
 import (
 	"context"
 	"fmt"
+	"net"
 	"strings"
 	"testing"
 
@@ -41,10 +42,15 @@ func Test_generateUnboundConf(t *testing.T) {
 	logger := mock_logging.NewMockLogger(mockCtrl)
 	logger.EXPECT().Info("%d hostnames blocked overall", 2).Times(1)
 	logger.EXPECT().Info("%d IP addresses blocked overall", 3).Times(1)
-	lines, warnings := generateUnboundConf(ctx, settings, client, logger)
+	subnet := net.IPNet{
+		IP:   net.IP{0, 0, 0, 0},
+		Mask: net.IPMask{0, 0, 0, 0},
+	}
+	lines, warnings := generateUnboundConf(ctx, settings, subnet, client, logger)
 	require.Len(t, warnings, 0)
 	expected := `
 server:
+  access-control: 0.0.0.0/0 allow
   cache-max-ttl: 9000
   cache-min-ttl: 3600
   do-ip4: yes
