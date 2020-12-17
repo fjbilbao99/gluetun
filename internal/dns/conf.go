@@ -15,7 +15,8 @@ import (
 	"github.com/qdm12/golibs/network"
 )
 
-func (c *configurator) MakeUnboundConf(ctx context.Context, settings settings.DNS, localSubnet net.IPNet, uid, gid int) (err error) {
+func (c *configurator) MakeUnboundConf(ctx context.Context, settings settings.DNS,
+	localSubnet net.IPNet, uid, gid int) (err error) {
 	c.logger.Info("generating Unbound configuration")
 	lines, warnings := generateUnboundConf(ctx, settings, localSubnet, c.client, c.logger)
 	for _, warning := range warnings {
