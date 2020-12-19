@@ -13,7 +13,7 @@ services:
       - 8000:8000/tcp # Built-in HTTP control server
     # command:
     volumes:
-      - /yourpath:/gluetun
+      - /srv/dev-disk-by-label-USB/Containers/Gluetun:/gluetun
     environment:
       # More variables are available, see the readme table
       - VPNSP=private internet access
